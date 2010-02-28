@@ -1,9 +1,17 @@
+/**
+* This class will go in Strabil.Utils 
+ * To be renamed AgentSet 
+ */
+
+
+
 package pmarket;
 import java.io.Serializable;
 
 import utils.DoTest;
 
 import market.Agent;
+import market.MarketSectorType;
 
 import currencies.Money;
 
@@ -11,11 +19,11 @@ import currencies.Money;
 public class LoyaltyLevel implements Serializable {
 
 	private static final long serialVersionUID = 2095384450109433717L;
-	private int size;
+	private int numberAgents;
 	private Money[] minBudget = new Money[Agent.nBudgets];
 	private Money[] maxBudget = new Money[Agent.nBudgets];
 	private String programName;
-	private String identifier;
+	private MarketSectorType identifier;//ENUM
 	public void setMinBudget(Money[] minBudget) {
 		this.minBudget = minBudget;
 	}
@@ -29,11 +37,11 @@ public class LoyaltyLevel implements Serializable {
 		return maxBudget;
 	}
 
-	public void setSize(int size) {
-		this.size = size;
+	public void setNumberAgents(int numberAgents) {
+		this.numberAgents = numberAgents;
 	}
-	public int getSize() {
-		return size;
+	public int getNumberAgents() {
+		return numberAgents;
 	}
 
 	/**
@@ -74,14 +82,14 @@ public class LoyaltyLevel implements Serializable {
 	 * The identifier of the Agents
 	 * @param identifier
 	 */
-	public void setIdentifier(String identifier) {
+	public void setIdentifier(MarketSectorType identifier) {
 		this.identifier = identifier;
 	}
 	/**
 	 * The identifier of the Agents
 	 * @return identifier
 	 */
-	public String getIdentifier() {
+	public MarketSectorType getIdentifier() {
 		return identifier;
 	}
 

@@ -1,4 +1,6 @@
 /**
+ * This class will go in Strabil.Utils 
+ * To be renamed MarketFactory
  * 
  */
 package pmarket;
@@ -31,6 +33,7 @@ import manager.Event;
 import manager.SimRelationship;
 import market.Agent;
 import market.AgentFactory;
+import market.MarketSectorType;
 import market.MktRelationship;
 import market.Product;
 
@@ -89,7 +92,28 @@ public class CustomerFactory {
 			DoTest.warn( "CustomerFactory.flushAgents: protocol "+protocol+" not recognized. Only XML and JSON at the moment.");
 	}
 
+	public void addLoyaltyLevel(LoyaltyLevel ll){
+		if(this.levels == null)
+			this.levels = new ArrayList<LoyaltyLevel>();
+		this.levels.add(ll);
+	}
 
+	public void addProductStock(ProductStock ps){
+		if(this.stocks == null)
+			this.stocks = new ArrayList<ProductStock>();
+		this.stocks.add(ps);
+	}
+	
+	public void resetLoyaltyLevel(){
+		this.levels = new ArrayList<LoyaltyLevel>();
+	}
+
+	public void resetProductStock(){
+		this.stocks = new ArrayList<ProductStock>();
+	}
+	
+	
+	
 	/**
 	 * @see market.AgentFactory#createAgents()
 	 */
@@ -97,7 +121,7 @@ public class CustomerFactory {
 		ArrayList<Agent> FinalCustomerList  = new ArrayList<Agent>();
 
 		for(LoyaltyLevel ll: this.levels){
-			for(int i=0; i< ll.getSize(); i++){
+			for(int i=0; i< ll.getNumberAgents(); i++){
 				Agent pippo = this.e.createAgent();
 				seller.addCustomer(pippo);
 
@@ -105,7 +129,7 @@ public class CustomerFactory {
 				pippo.getUnderlyingNode().getSingleRelationship(MktRelationship.IS_CUSTOMER, Direction.OUTGOING).setProperty("LoyaltyLevel", ll.getProgramName());
 
 				pippo.setBudgets(ll.getRandomBudgets());
-				pippo.setIdentifier(ll.getIdentifier());
+				pippo.setIdentifier(ll.getIdentifier().toString());
 				FinalCustomerList.add(pippo);
 			}
 		}
@@ -120,7 +144,7 @@ public class CustomerFactory {
 
 		for(ProductStock ps: this.stocks){
 
-			for(int pop =0; pop < ps.getSize(); pop++){
+			for(int pop =0; pop < ps.getNumberProducts(); pop++){
 
 				Product p = e.createProduct(ps.getName(), 
 						ps.getPrice(), 
@@ -159,7 +183,7 @@ public class CustomerFactory {
 			ProductStock s = new ProductStock();
 			s.setName(productName[i]);
 			s.setMarketSectorName(""); //It is going to be offered to everybody
-			s.setSize(this.getTotalCustomers());
+			s.setNumberProducts(this.getTotalCustomers());
 			s.setPrice(prices[i]);
 			s.setMarketValue(values[i]);
 			this.stocks.add(s);
@@ -172,7 +196,7 @@ public class CustomerFactory {
 		int[] level_population = {15, 4, 5, 7, 3};
 
 		this.levels = new ArrayList<LoyaltyLevel>();
-		String identifier = "Reseller";
+		MarketSectorType identifier = MarketSectorType.RESELLER;
 		//Budgets[iLevel][iBudget]
 		Money[][] minBudgets = {
 				{new Money("EUR",300), new Money("EUR",300), new Money("EUR",300),null,null,null,null,null,null},
@@ -194,7 +218,7 @@ public class CustomerFactory {
 			ll.setProgramName(dummyLevelName[l]);
 			ll.setMinBudget(minBudgets[l]);
 			ll.setMaxBudget(maxBudgets[l]);
-			ll.setSize(level_population[l]);
+			ll.setNumberAgents(level_population[l]);
 			ll.setIdentifier(identifier);
 			this.levels.add(ll);
 		}
@@ -286,7 +310,7 @@ public class CustomerFactory {
 		int c=0;
 
 		for(LoyaltyLevel ll: levels)
-			c=c+ll.getSize();
+			c=c + ll.getNumberAgents();
 		return c;
 	}
 

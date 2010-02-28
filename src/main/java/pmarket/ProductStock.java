@@ -1,3 +1,7 @@
+/**
+* This class will go in Strabil.Utils 
+ * To be renamed ProductSet 
+ */
 package pmarket;
 import java.io.Serializable;
 
@@ -14,7 +18,7 @@ import currencies.Money;
 public class ProductStock implements Serializable {
 
 	private static final long serialVersionUID = -8230409491904222791L;
-	private int size;
+	private int numberProducts;
 	private String name;
 	private String marketSectorName;
 	private Money price;
@@ -43,11 +47,11 @@ public class ProductStock implements Serializable {
 		if(marketValue ==null) return new Money(currency,0.0);
 		return marketValue;
 	}
-	public void setSize(int size) {
-		this.size = size;
+	public void setNumberProducts(int numberProducts) {
+		this.numberProducts = numberProducts;
 	}
-	public int getSize() {
-		return size;
+	public int getNumberProducts() {
+		return numberProducts;
 	}
 	/**
 	 * Goig to be the property of RelationshipType.OWNED. If it eg "Gold", it is going to be offered only to customers 

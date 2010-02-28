@@ -14,6 +14,7 @@ import currencies.Money;
 
 import manager.*;
 import market.*;
+import pmarket.*;
 import reaction.SimpleReaction;
 import utils.DoTest;
 
@@ -93,9 +94,8 @@ public class pEventAction implements EventAction{
 				//pippo.printInfo();
 				//Start looking for PAH droga's
 				for(Product droga: seller.getOwnedProducts()){
-					//As soon as we see a droga with the right LoyaltyLevel...
-					//droga.printInfo();
-					//The product is offered also if it has empty LoyaltyLevel property
+					//As soon as we see a droga with the right LoyaltyLevel
+					//the product is offered also if it has empty LoyaltyLevel property
 					String droga_ll = (String) droga.getUnderlyingNode().getSingleRelationship(MktRelationship.OWNS, Direction.OUTGOING).getProperty("LoyaltyLevel");
 					if(droga_ll == pippo_ll ||
 							droga_ll == "" ){
@@ -103,6 +103,7 @@ public class pEventAction implements EventAction{
 						//...we offer it to the customer
 						if(pippo.evaluates(droga, seller, reaction)){
 							pippo.buys(droga);
+							pippo.subFromBudget(CustomerBudgets.ONE.ordinal(), droga.getPrice());
 							System.out.println(pippo.getIdentifier()+"_"+pippo.getUId()+" bought "+droga.getIdentifier()+"_"+droga.getUId());
 							continue offer;
 						}
