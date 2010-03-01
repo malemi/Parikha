@@ -1,19 +1,13 @@
 /**
- * This class will go in Strabil.Utils 
+ * TODO This class will go in Strabil.Utils 
  * To be renamed MarketFactory
  * 
  */
 package pmarket;
 
-
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
-import java.io.Reader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,12 +21,14 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.thoughtworks.xstream.XStream;
 
+import org.exolab.castor.xml.MarshalException;
+import org.exolab.castor.xml.Marshaller;
+import org.exolab.castor.xml.ValidationException;
+
 import currencies.Money;
 
 import manager.Event;
-import manager.SimRelationship;
 import market.Agent;
-import market.AgentFactory;
 import market.MarketSectorType;
 import market.MktRelationship;
 import market.Product;
@@ -43,7 +39,6 @@ import market.Product;
  * serialized Strings with {@link #deserializeLoyaltyLevel(String, String)}
  * 
  * 
- * TODO mplements agentfactory and productfactory?
  * @author Mario Alemi
  */
 public class CustomerFactory {
@@ -66,11 +61,13 @@ public class CustomerFactory {
 	/*
 	 * TODO protocol must be a enum
 	 */
-	public String serializeLoyaltyLevels(String protocol){
-		if(protocol == "XML")
+	public String serializeLoyaltyLevels(OutputLibrary protocol){
+		if(protocol == OutputLibrary.XStream)
 			return this.toXML(this.levels);
-		else if(protocol == "JSON")
-			return this.toJSON(this.levels);
+		else if(protocol == OutputLibrary.GSON)
+			return this.toGSON(this.levels);
+		else if(protocol == OutputLibrary.TEST)
+			return this.toTEST(this.levels);
 		else 
 			return "CustomerFactory.flushAgents: protocol "+protocol+" not recognized. Only XML and JSON at the moment.";
 
@@ -83,11 +80,11 @@ public class CustomerFactory {
 	 * @param protocol
 	 */
 	@SuppressWarnings("unchecked")
-	public void deserializeLoyaltyLevel(String serialString, String protocol){
-		if(protocol == "XML")
+	public void deserializeLoyaltyLevel(String serialString, OutputLibrary protocol){
+		if(protocol == OutputLibrary.XStream)
 			this.levels = (Collection<LoyaltyLevel>) this.fromXML(serialString);
-		else if(protocol == "JSON")
-			this.levels = (Collection<LoyaltyLevel>) this.fromJSON(serialString, LoyaltyLevel.class);
+		else if(protocol == OutputLibrary.GSON)
+			this.levels = (Collection<LoyaltyLevel>) this.fromGSON(serialString, LoyaltyLevel.class);
 		else
 			DoTest.warn( "CustomerFactory.flushAgents: protocol "+protocol+" not recognized. Only XML and JSON at the moment.");
 	}
@@ -103,7 +100,7 @@ public class CustomerFactory {
 			this.stocks = new ArrayList<ProductStock>();
 		this.stocks.add(ps);
 	}
-	
+
 	public void resetLoyaltyLevel(){
 		this.levels = new ArrayList<LoyaltyLevel>();
 	}
@@ -111,9 +108,9 @@ public class CustomerFactory {
 	public void resetProductStock(){
 		this.stocks = new ArrayList<ProductStock>();
 	}
-	
-	
-	
+
+
+
 	/**
 	 * @see market.AgentFactory#createAgents()
 	 */
@@ -123,12 +120,13 @@ public class CustomerFactory {
 		for(LoyaltyLevel ll: this.levels){
 			for(int i=0; i< ll.getNumberAgents(); i++){
 				Agent pippo = this.e.createAgent();
+				pippo.setBudgets(ll.getRandomBudgets());
+
 				seller.addCustomer(pippo);
 
 				//There should be always one relationship, as the customer has just been created.... 
 				pippo.getUnderlyingNode().getSingleRelationship(MktRelationship.IS_CUSTOMER, Direction.OUTGOING).setProperty("LoyaltyLevel", ll.getProgramName());
 
-				pippo.setBudgets(ll.getRandomBudgets());
 				pippo.setIdentifier(ll.getIdentifier().toString());
 				FinalCustomerList.add(pippo);
 			}
@@ -172,7 +170,7 @@ public class CustomerFactory {
 	public void createDummyProductStock(){
 
 		this.stocks = new ArrayList<ProductStock>();
-		String[] productName = {"Aspirin", "Vitamin"};
+		String[] productName = {"Consulting", "WebSite"};
 		int nProd = productName.length;
 
 		Money[] prices = {new Money("EUR",10), new Money("EUR",150)};
@@ -199,6 +197,7 @@ public class CustomerFactory {
 		MarketSectorType identifier = MarketSectorType.RESELLER;
 		//Budgets[iLevel][iBudget]
 		Money[][] minBudgets = {
+				//GOODS, SERVICES, LOYALTY PRESENT, PRESENT UP, PRESENT DOWN
 				{new Money("EUR",300), new Money("EUR",300), new Money("EUR",300),null,null,null,null,null,null},
 				{new Money("EUR",500), new Money("EUR",500), new Money("EUR",500),null,null,null,null,null,null},
 				{new Money("EUR",700), new Money("EUR",700), new Money("EUR",700),null,null,null,null,null,null},
@@ -206,12 +205,32 @@ public class CustomerFactory {
 				{new Money("EUR",1000), new Money("EUR",1000), new Money("EUR",1000),null,null,null,null,null,null}};
 
 		Money[][] maxBudgets = {
-				{new Money("EUR",500), new Money("EUR",500), new Money("EUR",500),null,null,null,null,null,null},
-				{new Money("EUR",700), new Money("EUR",700), new Money("EUR",700),null,null,null,null,null,null},
-				{new Money("EUR",900), new Money("EUR",900), new Money("EUR",900),null,null,null,null,null,null},
-				{new Money("EUR",1000), new Money("EUR",1000), new Money("EUR",1000),null,null,null,null,null,null},
-				{new Money("EUR",1500), new Money("EUR",1500), new Money("EUR",1500),null,null,null,null,null,null}};
+				{new Money("EUR",500), new Money("EUR",500), minBudgets[0][2],null,null,null,null,null,null},
+				{new Money("EUR",700), new Money("EUR",700),  minBudgets[1][2],null,null,null,null,null,null},
+				{new Money("EUR",900), new Money("EUR",900),  minBudgets[2][2],null,null,null,null,null,null},
+				{new Money("EUR",1000), new Money("EUR",1000),  minBudgets[3][2],null,null,null,null,null,null},
+				{new Money("EUR",1500), new Money("EUR",1500),  minBudgets[4][2],null,null,null,null,null,null}};
 
+		//Each customer must know how much is the loyalty offer difference compared to richer and poorer customers
+		for(int l=0; l<this.nLevels; l++){
+			//DIFFERENCE_UP
+			try{
+				minBudgets[l][CustomerBudget.DIFFERENCE_UP.ordinal()] = minBudgets[l+1][CustomerBudget.LOYALTY_PRESENT.ordinal()]
+				                                                                        .sub(minBudgets[l][CustomerBudget.LOYALTY_PRESENT.ordinal()]);				
+			} catch (ArrayIndexOutOfBoundsException e) {
+				minBudgets[l][CustomerBudget.DIFFERENCE_UP.ordinal()] = new Money("EUR",0);
+			}
+			maxBudgets[l][CustomerBudget.DIFFERENCE_UP.ordinal()] = minBudgets[l][CustomerBudget.DIFFERENCE_UP.ordinal()]; //min=max => Random gives just the value itself.
+
+			//DIFFERENCE_DOWN
+			try{
+				minBudgets[l][CustomerBudget.DIFFERENCE_DOWN.ordinal()] = minBudgets[l-1][CustomerBudget.LOYALTY_PRESENT.ordinal()]
+				                                                                        .sub(minBudgets[l][CustomerBudget.LOYALTY_PRESENT.ordinal()]);				
+			} catch (ArrayIndexOutOfBoundsException e) {
+				minBudgets[l][CustomerBudget.DIFFERENCE_DOWN.ordinal()] = new Money("EUR",0);
+			}
+			maxBudgets[l][CustomerBudget.DIFFERENCE_DOWN.ordinal()] = minBudgets[l][CustomerBudget.DIFFERENCE_DOWN.ordinal()];
+		}
 		//Create LL and set properties 
 		for(int l=0; l<this.nLevels; l++){
 			LoyaltyLevel ll = new LoyaltyLevel();
@@ -253,7 +272,7 @@ public class CustomerFactory {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Object fromJSON(String serialString, Class type){
+	private Object fromGSON(String serialString, Class type){
 		//http://sites.google.com/site/gson/gson-user-guide
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		if(type == LoyaltyLevel.class){
@@ -278,14 +297,30 @@ public class CustomerFactory {
 
 
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		 */
 
 	}
 
-	private String toJSON(Object obj){
+	private String toTEST(Object obj){
+		String xml = "TEST....... marshall";
+
+
+		// Create a File to marshal to
+		try {
+			FileWriter writer = new FileWriter("book.xml");
+			Marshaller.marshal(this.levels, writer);
+		} catch (Exception e) {
+			System.err.println(e.getMessage());
+			e.printStackTrace(System.err);
+		}
+		return xml;
+	}
+
+
+
+	private String toGSON(Object obj){
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
 

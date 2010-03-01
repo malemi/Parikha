@@ -10,6 +10,8 @@
 package Parikha;
 
 import java.io.IOException;
+import java.util.InvalidPropertiesFormatException;
+
 import manager.*;
 import pmanager.*;
 
@@ -18,8 +20,10 @@ public class Parikha {
 	/**
 	 * @param args command line options
 	 * @throws IOException 
+	 * @throws InvalidPropertiesFormatException 
+	 * @throws IOException 
 	 */
-	public static void main(String[] args){
+	public static void main(String[] args) throws InvalidPropertiesFormatException, IOException{
 
 		RunManager rm = RunManager.getInstance();
 
@@ -29,6 +33,9 @@ public class Parikha {
 		int nEvent=1;
 		int nPeriods = 1;
 		rm.Initialize(pra, pea, nPeriods, "/Users/m/neo4j_db"); 
+
+		rm.readConfig("config.xml");
+		
 		//inputting the number of events we want
 		try {
 			rm.RunSimulation(nEvent);

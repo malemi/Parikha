@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>Parameters for the Loyalty levels</comment>
+<entry key="currency">EUR</entry>
+<entry key="naturalLoss">0.03</entry>
+<entry key="upgradePotential">0.1</entry>
+<!-- At the moment works like that: 10% of the upgradePotential will go up if the difference is gammaLow10*Budget.GOODS -->
+<!-- Also note: a Customer which is close to the bottom of the level does not care about the fact that next year will 
+receive less. He will care next year. On the other hand, even if he is at the bottom, might upgrade this year to the
+upper level (see pEventAction.DoOneCycle)-->
+<entry key="gammaLow10">0.1</entry>
+<entry key="gammaUp10">0.1</entry>
+</properties>
+ 

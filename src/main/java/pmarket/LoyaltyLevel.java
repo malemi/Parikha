@@ -8,6 +8,7 @@
 package pmarket;
 import java.io.Serializable;
 
+import utils.Default;
 import utils.DoTest;
 
 import market.Agent;
@@ -58,14 +59,14 @@ public class LoyaltyLevel implements Serializable {
 		return programName;
 	}
 	public Money[] getRandomBudgets(){
-		Money[] m = new Money[Agent.nBudgets];
+		Money[] m = new Money[Agent.nBudgets]; 
 		for(int i = 0; i<Agent.nBudgets; i++){
 			if( maxBudget[i] !=null && minBudget[i] !=null){
-				m[i] = new Money("EUR", 
+				m[i] = new Money(minBudget[i].getCurrency(), 
 						Math.random()*( maxBudget[i].getValue() - minBudget[i].getValue())+minBudget[i].getValue());
 			}
 			else
-				m[i] = new Money("EUR", 0);
+				m[i] = new Money(Default.currency, 0);
 
 		} 
 		return m;
