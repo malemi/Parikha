@@ -1,30 +1,84 @@
-/**
-* This class will go in Strabil.Utils 
- * To be renamed AgentSet 
- */
-
-
 
 package pmarket;
+
 import java.io.Serializable;
 
+import org.strabil.currencies.Money;
+import org.strabil.market.Agent;
+import org.strabil.market.AgentSet;
+import org.strabil.market.MarketSectorType;
+import org.strabil.utils.DoTest;
+
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
+import com.thoughtworks.xstream.annotations.XStreamOmitField;
+
 import utils.Default;
-import utils.DoTest;
-
-import market.Agent;
-import market.MarketSectorType;
-
-import currencies.Money;
 
 
-public class LoyaltyLevel implements Serializable {
+
+@XStreamAlias("level")
+public class LoyaltyLevel implements Serializable, AgentSet {
 
 	private static final long serialVersionUID = 2095384450109433717L;
+
+	@XStreamAlias("population")
 	private int numberAgents;
+
+	@XStreamAlias("minimum-budget")
 	private Money[] minBudget = new Money[Agent.nBudgets];
+
+	@XStreamAlias("maximum-budget")
 	private Money[] maxBudget = new Money[Agent.nBudgets];
+
+	@XStreamAlias("average-budget")
+	private Money[] aveBudget = new Money[Agent.nBudgets];
+
+	@XStreamAsAttribute
+	@XStreamAlias("program-name")
 	private String programName;
+
+	@XStreamOmitField
 	private MarketSectorType identifier;//ENUM
+
+	private long period;
+
+	public void setAveBudget(Money[] aveBudget) {
+		this.aveBudget = aveBudget;
+	}
+	public Money[] getAveBudget() {
+		return aveBudget;
+	}
+
+	public void setAveBudget(int i, Money aveBudget) {
+		this.aveBudget[i] = aveBudget;
+	}
+	public Money getAveBudget(int i) {
+		return aveBudget[i];
+	}
+
+	
+	public void setPeriod(long period) {
+		this.period = period;
+	}
+	public long getPeriod() {
+		return period;
+	}
+	public void setMinBudget(int i, Money minBudget) {
+		this.minBudget[i] = minBudget;
+	}
+	public Money getMinBudget(int i) {
+		return minBudget[i];
+	}
+	public void setMaxBudget(int i, Money maxBudget) {
+		this.maxBudget[i] = maxBudget;
+	}
+	public Money getMaxBudget(int i) {
+		return maxBudget[i];
+	}
+
+
+
 	public void setMinBudget(Money[] minBudget) {
 		this.minBudget = minBudget;
 	}
@@ -58,6 +112,7 @@ public class LoyaltyLevel implements Serializable {
 	public String getProgramName() {
 		return programName;
 	}
+
 	public Money[] getRandomBudgets(){
 		Money[] m = new Money[Agent.nBudgets]; 
 		for(int i = 0; i<Agent.nBudgets; i++){
@@ -67,7 +122,6 @@ public class LoyaltyLevel implements Serializable {
 			}
 			else
 				m[i] = new Money(Default.currency, 0);
-
 		} 
 		return m;
 	}
@@ -80,15 +134,14 @@ public class LoyaltyLevel implements Serializable {
 
 	}
 	/**
-	 * The identifier of the Agents
+	 * The identifier of its Agents (RESELLER, FINAL_CUSTOMER etc)
 	 * @param identifier
 	 */
 	public void setIdentifier(MarketSectorType identifier) {
 		this.identifier = identifier;
 	}
 	/**
-	 * The identifier of the Agents
-	 * @return identifier
+	 * The identifier of its Agents (RESELLER, FINAL_CUSTOMER etc)
 	 */
 	public MarketSectorType getIdentifier() {
 		return identifier;

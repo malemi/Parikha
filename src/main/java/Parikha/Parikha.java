@@ -1,8 +1,4 @@
 /**
- * 
- */
-
-/**
  * @author 3H
  *
  */
@@ -12,7 +8,8 @@ package Parikha;
 import java.io.IOException;
 import java.util.InvalidPropertiesFormatException;
 
-import manager.*;
+import org.strabil.manager.RunManager;
+
 import pmanager.*;
 
 public class Parikha {
@@ -31,7 +28,7 @@ public class Parikha {
 		pEventAction pea=new pEventAction();
 
 		int nEvent=1;
-		int nPeriods = 1;
+		int nPeriods = 20;
 		rm.Initialize(pra, pea, nPeriods, "/Users/m/neo4j_db"); 
 
 		rm.readConfig("config.xml");

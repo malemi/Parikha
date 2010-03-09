@@ -1,21 +1,17 @@
-/**
-* This class will go in Strabil.Utils 
- * To be renamed ProductSet 
- */
 package pmarket;
 import java.io.Serializable;
 
-import currencies.Money;
+import org.strabil.currencies.Money;
+import org.strabil.market.ProductSet;
+
+
 
 /**
  * 
- */
-
-/**
- * @author m
+ * @author Mario Alemi
  *
  */
-public class ProductStock implements Serializable {
+public class ProductStock implements Serializable, ProductSet {
 
 	private static final long serialVersionUID = -8230409491904222791L;
 	private int numberProducts;

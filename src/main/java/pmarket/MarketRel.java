@@ -1,8 +1,7 @@
 package pmarket;
 
-import market.*;
-
 import org.neo4j.graphdb.Relationship;
+import org.strabil.market.WeightedRelationship;
 
 public class MarketRel extends WeightedRelationship {
 
