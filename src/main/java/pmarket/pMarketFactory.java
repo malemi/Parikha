@@ -12,6 +12,7 @@ import java.util.Collection;
 import org.neo4j.graphdb.Direction;
 import org.strabil.currencies.Money;
 import org.strabil.manager.Event;
+import org.strabil.manager.RunManager;
 import org.strabil.market.Agent;
 import org.strabil.market.AgentSet;
 import org.strabil.market.MarketFactory;
@@ -31,7 +32,10 @@ public class pMarketFactory implements MarketFactory {
 
 	private Event e;
 
-	private ArrayList<String> levelNames = new ArrayList<String>();
+	RunManager rm = RunManager.getInstance();
+
+	
+	//private ArrayList<String> levelNames = new ArrayList<String>();
 
 	public pMarketFactory(Event e){
 		this.e = e;
@@ -47,9 +51,8 @@ public class pMarketFactory implements MarketFactory {
 
 	@Override
 	public Collection<Agent> createAgents(Agent seller) {
+		
 		ArrayList<Agent> FinalCustomerList  = new ArrayList<Agent>();
-
-
 		for(LoyaltyLevel ll: this.levels){
 			for(int i=0; i< ll.getNumberAgents(); i++){
 				Agent pippo = this.e.createAgent();
@@ -66,15 +69,8 @@ public class pMarketFactory implements MarketFactory {
 		}
 		return FinalCustomerList;
 	}
-	
-	@Override
-	public Collection<LoyaltyLevel> getAgentSets() {
- 		
-		return this.levels;
 
-	}
 
-	
 	@Override
 	public void addProductSet(ProductSet productSet) {
 		if(this.stocks == null)
@@ -115,26 +111,30 @@ public class pMarketFactory implements MarketFactory {
 		return GoodsList;
 	}
 
-
-
-	@Override
-	public Collection<ProductSet> getProductSets() {
-		return null;
-	}
-
-
-	@Override
 	public void resetAgentSet() {
-		// TODO Auto-generated method stub
-
+		this.levels = new ArrayList<LoyaltyLevel>();
 	}
 
+	public ArrayList<LoyaltyLevel> getAgentSets(){
+		return this.levels;
+	}
 
-	@Override
+	public void setAgentSets(ArrayList<LoyaltyLevel> levels){
+		this.levels = levels;
+	}
+
 	public void resetProductSet() {
-		// TODO Auto-generated method stub
-
+		this.stocks = new ArrayList<ProductStock>();
 	}
+
+	public ArrayList<ProductStock> getProductSets() {
+		return stocks;
+	}
+
+	public void setProductSets(ArrayList<ProductStock> stocks) {
+		this.stocks = stocks;
+	}
+
 
 
 	/**
@@ -147,7 +147,7 @@ public class pMarketFactory implements MarketFactory {
 	 * up or down...
 	 * 
 	 * TODO *NB* this.levels of the instantiated object are not touched! Maybe it should be re-populateAgentSets, and should 
-	 * change the parameters of this.levels
+	 * and change the parameters of this.levels
 	 * *************************************************************
 	 * TODO *********THIS METHOD HAS TO BE CHECKED******************
 	 * *************************************************************
@@ -159,11 +159,12 @@ public class pMarketFactory implements MarketFactory {
 
 		int nLevels = this.levels.size();
 		int[] numberAgents = new int[nLevels];
-		int kl = keyBudget.ordinal();
+		int kb = keyBudget.ordinal();
 
 		ArrayList<LoyaltyLevel> mylevels = new ArrayList<LoyaltyLevel>(nLevels);
 		Money[][] aveBudget = new Money[nLevels][Agent.nBudgets];
 
+		//Initialize all to 0
 		for(int l=0; l<nLevels; l++){
 			numberAgents[l] = 0;
 			for(int b=0; b<Agent.nBudgets; b++)
@@ -175,11 +176,11 @@ public class pMarketFactory implements MarketFactory {
 		for(Agent pippo: customerList){
 			//For each agent cycle over the levels, when finds the right one (judging on a certain budget)
 			searchlevel: for(LoyaltyLevel ll: this.levels){
-				String name = ll.getProgramName();
-				int l = this.levelNames.indexOf(name);
+
+				int l =   this.levels.indexOf(ll);
 				//Right budget?
-				if(pippo.getBudget(kl).getValue() < ll.getMaxBudget(kl).getValue() 
-						&& pippo.getBudget(kl).getValue() >= ll.getMinBudget(kl).getValue() ){
+				if(pippo.getBudget(kb).getValue() < ll.getMaxBudget(kb).getValue() 
+						&& pippo.getBudget(kb).getValue() >= ll.getMinBudget(kb).getValue() ){
 					//DoTest.debug(l+" A-----------"+numberAgents[l]);
 					numberAgents[l]++;
 					//DoTest.debug(l+" B-----------"+numberAgents[l]);
@@ -191,11 +192,13 @@ public class pMarketFactory implements MarketFactory {
 
 			}
 		}
+		
+		
 		for(LoyaltyLevel ll: this.levels){
 			String name = ll.getProgramName();
-			int l = this.levelNames.indexOf(name);
+			int l = this.levels.indexOf(ll);
 
-		 	//DoTest.debug("numberAgents["+l+"] = "+numberAgents[l]);
+			//DoTest.debug("numberAgents["+l+"] = "+numberAgents[l]);
 			//Normalize average budget
 			for(int b=0; b<Agent.nBudgets; b++){
 				aveBudget[l][b].divAssign(numberAgents[l]);
@@ -209,27 +212,24 @@ public class pMarketFactory implements MarketFactory {
 			mylevels.get(l).setMinBudget(ll.getMinBudget());
 			mylevels.get(l).setMaxBudget(ll.getMaxBudget());
 		}
+		
 		return mylevels;
 	}
 
 
-	
-	
-	
-	
-	
-	
-	
-	
 	public ArrayList<String> getLevelNames(){
-		return levelNames;
+		ArrayList<String> ass = new ArrayList<String>();
+		for(LoyaltyLevel ll: levels){
+			ass.add(ll.getProgramName());
+		}
+		return ass;
 	}
 
 	private Money[][] setDifferentialBudgets(Money[][] bdg){
 
 
 		//Each customer must know how much is the loyalty offer difference compared to richer and poorer customers
-		for(int l=0; l<levelNames.size(); l++){
+		for(int l=0; l<levels.size(); l++){
 			//DIFFERENCE_UP
 			try{
 				bdg[l][CustomerBudget.DIFFERENCE_UP.ordinal()] = bdg[l+1][CustomerBudget.LOYALTY_PRESENT.ordinal()]
@@ -252,7 +252,7 @@ public class pMarketFactory implements MarketFactory {
 	/**
 	 * Create a dummy list of {@link ProductStock}'s
 	 */
-	public void createDummyProductStock(){
+	public void createConfigProductStock(){
 
 		this.stocks = new ArrayList<ProductStock>();
 		String[] productName = {"Consulting", "WebSite"};
@@ -275,19 +275,16 @@ public class pMarketFactory implements MarketFactory {
 	/**
 	 * Create a dummy list of {@link LoyaltyLevel}'s
 	 */
-	public void createDummyLoyaltyLevel(){
-		DoTest.warn("Creating Dummy Agent Loyalty Levels");
-		//t=0 parameters
+	public void createConfigLoyaltyLevel(){
 
-		levelNames.add("NoStatus");
-		levelNames.add("Brass");
-		levelNames.add("Bronze");
-		levelNames.add("Silver");
-		levelNames.add("Gold");
-		//		levelName.add("");
-
-
-		int[] level_population = {100, 100, 100, 100, 100};
+		ArrayList<String> levelNames = new ArrayList<String>();
+		ArrayList<Integer> levelPopulation = new ArrayList<Integer>();
+		
+		int nLevels = Integer.parseInt(rm.getProperty("NumberLevels"));
+		for(int i =0; i<nLevels; i++){
+			levelNames.add(rm.getProperty("Level"+(i+1)));
+			levelPopulation.add( Integer.parseInt( rm.getProperty("Population"+(i+1))));
+		}
 
 		this.levels = new ArrayList<LoyaltyLevel>();
 		MarketSectorType identifier = MarketSectorType.RESELLER;
@@ -302,20 +299,20 @@ public class pMarketFactory implements MarketFactory {
 				{new Money("EUR",1000), new Money("EUR",1000), new Money("EUR",1000),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0)}};
 
 		Money[][] maxBudgets = {
-				{new Money("EUR",500), new Money("EUR",500), minBudgets[0][2].clone(),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0)},
-				{new Money("EUR",700), new Money("EUR",700),  minBudgets[1][2].clone(),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0)},
-				{new Money("EUR",900), new Money("EUR",900),  minBudgets[2][2].clone(),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0)},
-				{new Money("EUR",1000), new Money("EUR",1000),  minBudgets[3][2].clone(),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0)},
-				{new Money("EUR",1500), new Money("EUR",1500),  minBudgets[4][2].clone(),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0)}};
+				{new Money("EUR",500), new Money("EUR",500), minBudgets[0][2],    new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0)},
+				{new Money("EUR",700), new Money("EUR",700),  minBudgets[1][2],   new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0)},
+				{new Money("EUR",900), new Money("EUR",900),  minBudgets[2][2],   new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0)},
+				{new Money("EUR",1000), new Money("EUR",1000),  minBudgets[3][2], new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0)},
+				{new Money("EUR",1500), new Money("EUR",1500),  minBudgets[4][2], new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0),new Money("EUR", 0)}};
 
 
 		minBudgets = this.setDifferentialBudgets(minBudgets);
 		maxBudgets = this.setDifferentialBudgets(maxBudgets);
 
-		Money[][] aveBudget = new Money[this.levelNames.size()][Agent.nBudgets];
+		Money[][] aveBudget = new Money[levelNames.size()][Agent.nBudgets];
 
 		//Create LL and set properties 
-		for(int l=0; l< this.levelNames.size(); l++){
+		for(int l=0; l< levelNames.size(); l++){
 
 			for(int b=0;b<Agent.nBudgets;b++){
 				aveBudget[l][b] = (minBudgets[l][b].add(maxBudgets[l][b]).divAssign(2.0));
@@ -327,7 +324,7 @@ public class pMarketFactory implements MarketFactory {
 			ll.setMinBudget(minBudgets[l]);
 			ll.setMaxBudget(maxBudgets[l]);
 			ll.setAveBudget(aveBudget[l]);
-			ll.setNumberAgents(level_population[l]);
+			ll.setNumberAgents(levelPopulation.get(l));
 			ll.setIdentifier(identifier);
 			ll.setPeriod(0);
 
@@ -336,8 +333,8 @@ public class pMarketFactory implements MarketFactory {
 		}
 	}
 
-//oooooOOOOOO000 Private Methods  000OOOOOOoooooo\\
-	
+	//oooooOOOOOO000 Private Methods  000OOOOOOoooooo\\
+
 	private int getTotalCustomers(){
 		int c=0;
 
@@ -346,5 +343,5 @@ public class pMarketFactory implements MarketFactory {
 		return c;
 	}
 
-	
+
 }

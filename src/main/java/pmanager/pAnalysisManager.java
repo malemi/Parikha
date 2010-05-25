@@ -7,14 +7,18 @@
 package pmanager;
 
 import java.io.FileWriter;
+
 import java.io.StringWriter;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.neo4j.graphdb.Direction;
 import org.strabil.manager.AnalysisManager;
 import org.strabil.market.Agent;
 import org.strabil.market.AgentSet;
+import org.strabil.market.MktRelationship;
+import org.strabil.market.Product;
 import org.strabil.utils.DoTest;
 
 import com.google.gson.Gson;
@@ -26,12 +30,21 @@ import pmarket.LoyaltyLevel;
 import pmarket.OutputLibrary;
 import pmarket.ProductStock;
 import static pmarket.OutputLibrary.*;
+import static pmarket.CustomerBudget.*;
 
+//TODO WRITE AnalysisManager!!!!*******************
 public class pAnalysisManager implements AnalysisManager { 
 	
                     	//ooooooOOOOOO000 000OOOOOOoooooo\\
 	//ooooooOOOOOO000 Serialization and de-serialization 000OOOOOOoooooo\\
 
+/**
+ * Outputs a string with a serialized ArrayList of {@link LoyaltyLevel}s. Output can be any of the
+ * {@link OutputLibrary} enum.
+ * 
+ * 
+ * 
+ */
 	public String serializeAgentSets(ArrayList<LoyaltyLevel>  levels, OutputLibrary protocol){
 		if(protocol == XStream)
 			return this.toXML(levels);
@@ -45,15 +58,17 @@ public class pAnalysisManager implements AnalysisManager {
 	}
 
 	/**
-	 * @param serialString
-	 * @param protocol
+	 * 
+	 * @return A collection of the deserialized {@link AgentSet}s.
+	 * @param serialString the serialized objects
+	 * @param protocol see {@link OutputLibrary}
 	 */
 	@SuppressWarnings("unchecked")
-	public Collection<AgentSet> deserializeLoyaltyLevel(String serialString, ArrayList<LoyaltyLevel> levels, OutputLibrary protocol){
+	public Collection<AgentSet> deserializeLoyaltyLevel(String serialString,  OutputLibrary protocol){
 		
-		if(protocol == OutputLibrary.XStream)
+		if(protocol == XStream)
 			return (Collection<AgentSet>) this.fromXML(serialString);
-		else if(protocol == OutputLibrary.GSON)
+		else if(protocol == GSON)
 			return (Collection<AgentSet>) this.fromGSON(serialString, LoyaltyLevel.class);
 		else{
 			DoTest.warn( "CustomerFactory.flushAgents: protocol "+protocol+" not recognized. Only XML and JSON at the moment.");
@@ -172,8 +187,8 @@ public class pAnalysisManager implements AnalysisManager {
 		return xml;
 	}
 
-	//ooooooOOOOOO000 000OOOOOOoooooo\\
-	//ooooooOOOOOO000 000OOOOOOoooooo\\
+					//ooooooOOOOOO000 000OOOOOOoooooo\\
+	//ooooooOOOOOO000 Print out intermediate results. 000OOOOOOoooooo\\
 
 	public String printAgentSets(Collection<LoyaltyLevel> all, String separator){
 		String o = "";
@@ -188,5 +203,30 @@ public class pAnalysisManager implements AnalysisManager {
 		return o;
 	}
 
+	
+	public String printAgentsHeader(String sep){
+		String o = "";
+		o = "UId"+sep+"Year"+sep+"Loyalty Level"+sep+"Bdg4Goods"+sep+"Bdg4Services"+sep+"Product"+sep+"Product"+sep+"Product"+sep+"Product"+sep+"Product"+sep+"Product"+sep+"Product"+sep+"Product";
+		return o;
+	}
+	
+	public String printAgents(Collection<Agent> agents, long period, String separator){
+		String o = "";
+		for(Agent pippo: agents){
+			String pippo_ll = (String) pippo.getUnderlyingNode().getSingleRelationship(MktRelationship.IS_CUSTOMER, Direction.OUTGOING).getProperty("LoyaltyLevel") ;
+
+			o = o+pippo.getUId()+separator+period+separator+pippo_ll+
+			separator+ Math.round(pippo.getBudget(GOODS.ordinal()).getValue())+
+			separator+ Math.round(pippo.getBudget(SERVICES.ordinal()).getValue());
+			for(Product p :pippo.getOwnedProducts()){
+				o=o+separator+p.getName();
+			}
+			o=o+"\n";
+		}
+		
+		return o;
+	}
+	
+	
 	
 }

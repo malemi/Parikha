@@ -2,7 +2,7 @@ package pmarket;
 
 
 /**
- * General Budget denomination.
+ * General Budget denomination: GOODS, SERVICES, LOYALTY_PRESENT, DIFFERENCE_UP/DOWN, SIX, SEVEN, EIGHT, NINE
  * 
  * @author Mario Alemi
  *

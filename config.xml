@@ -2,13 +2,30 @@
  <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
 <comment>Parameters for the Loyalty levels</comment>
+<!-- Simulation -->
+<entry key="test">pippo</entry>
+<entry key="NumberEvents">1</entry>
+<entry key="NumberPeriods">10</entry>
+<!-- Budgets -->
 <entry key="currency">EUR</entry>
-<entry key="naturalLoss">0.0</entry>
-<entry key="upgradePotential">0.5</entry>
-<!-- At the moment works like that: 10% of the upgradePotential will go up if the difference is gammaLow10*Budget.GOODS -->
+<entry key="naturalLoss">0.03</entry>
+<entry key="upgradePotential">0.1</entry>
+<!-- At the moment works like that: 10% of the upgradePotential will go up if the difference is gammaLow10*AverageBudget.GOODS,
+90% will go up if the diff is gammaUp10*Average -->
 <!-- Also note: a Customer which is close to the bottom of the level does not care about the fact that next year will 
 receive less. He will care next year. On the other hand, even if he is at the bottom, might upgrade this year to the
 upper level (see pEventAction.DoOneCycle)-->
-<entry key="gammaLow10">0.05</entry>
-<entry key="gammaUp10">0.1</entry>
+<entry key="gammaLow10">10</entry>
+<entry key="gammaUp10">40</entry>
+<entry key="NumberLevels">5</entry>
+<entry key="Level1">NoStat</entry>
+<entry key="Level2">Brass</entry>
+<entry key="Level3">Bronze</entry>
+<entry key="Level4">Silver</entry>
+<entry key="Level5">Gold</entry>
+<entry key="Population1">10</entry>
+<entry key="Population2">10</entry>
+<entry key="Population3">10</entry>
+<entry key="Population4">10</entry>
+<entry key="Population5">10</entry>
 </properties>
